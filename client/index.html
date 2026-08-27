@@ -13,10 +13,10 @@
 
     <main class="app-main">
       <section class="upload-section" id="upload-section">
+        <input type="file" id="file-input" class="visually-hidden" accept=".csv,text/csv" />
         <label class="upload-button" for="file-input" aria-label="Upload CSV file">
           Upload CSV
         </label>
-        <input type="file" id="file-input" accept=".csv,text/csv" hidden />
         <div class="dropzone" id="dropzone">
           Drag &amp; drop a CSV file here, or click "Upload CSV"
         </div>
@@ -25,22 +25,25 @@
       </section>
 
       <section class="range-section" id="range-section">
-        <div class="range-buttons">
-          <button type="button" class="range-btn" data-range="1m">1 Month</button>
-          <button type="button" class="range-btn" data-range="1y">1 Year</button>
-          <button type="button" class="range-btn" data-range="all">All Time</button>
-        </div>
-        <div class="range-inputs">
-          <label for="from-date">From:</label>
-          <input type="date" id="from-date" name="from-date" />
-          <label for="to-date">To:</label>
-          <input type="date" id="to-date" name="to-date" />
-        </div>
+        <fieldset id="range-fieldset" disabled>
+          <legend class="visually-hidden">Time range</legend>
+          <div class="range-buttons">
+            <button type="button" class="range-btn" data-range="1m">1 Month</button>
+            <button type="button" class="range-btn" data-range="1y">1 Year</button>
+            <button type="button" class="range-btn" data-range="all">All Time</button>
+          </div>
+          <div class="range-inputs">
+            <label for="from-date">From:</label>
+            <input type="date" id="from-date" name="from-date" />
+            <label for="to-date">To:</label>
+            <input type="date" id="to-date" name="to-date" />
+          </div>
+        </fieldset>
       </section>
 
       <section class="chart-section" id="chart-section">
         <p class="chart-message" id="chart-message">Upload a CSV file to see the chart.</p>
-        <canvas id="employees-chart"></canvas>
+        <canvas id="employees-chart" aria-label="Employee count chart" role="img" hidden></canvas>
       </section>
     </main>
 

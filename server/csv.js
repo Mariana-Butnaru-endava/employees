@@ -17,7 +17,7 @@ export function parseEmployeesCsv(filePath) {
     let headers = null;
 
     fs.createReadStream(filePath)
-      .pipe(csvParser())
+      .pipe(csvParser({ mapHeaders: ({ header, index }) => (index === 0 ? header.replace(/^\uFEFF/, '') : header) }))
       .on('headers', (h) => {
         headers = h;
       })
@@ -38,14 +38,32 @@ function buildResult(headers, rows) {
     throw new Error('The uploaded file is empty.');
   }
 
-  const [dateColumn, ...seriesColumns] = headers;
+  const [dateColumn, ...candidateColumns] = headers;
 
-  if (seriesColumns.length === 0) {
+  if (candidateColumns.length === 0) {
     throw new Error('No employee count columns found.');
   }
 
   if (rows.length === 0) {
     throw new Error('The uploaded file is empty.');
+  }
+
+  // A column is treated as a numeric series only if every non-empty value
+  // in it parses as a number. Columns that contain any non-numeric value
+  // (e.g. free-text notes) are ignored entirely rather than causing rows
+  // to be dropped.
+  const seriesColumns = candidateColumns.filter((col) =>
+    rows.every((row) => {
+      const rawValue = row[col];
+      if (rawValue === undefined || rawValue === null || String(rawValue).trim() === '') {
+        return true; // emptiness is judged per-row later, not disqualifying here
+      }
+      return !Number.isNaN(Number(rawValue));
+    })
+  );
+
+  if (seriesColumns.length === 0) {
+    throw new Error('No employee count columns found.');
   }
 
   const cleanRows = [];
