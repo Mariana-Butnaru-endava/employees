@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EmployeesNumber</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>EmployeesNumber</h1>
+    </header>
+
+    <main class="app-main">
+      <section class="upload-section" id="upload-section">
+        <label class="upload-button" for="file-input" aria-label="Upload CSV file">
+          Upload CSV
+        </label>
+        <input type="file" id="file-input" accept=".csv,text/csv" hidden />
+        <div class="dropzone" id="dropzone">
+          Drag &amp; drop a CSV file here, or click "Upload CSV"
+        </div>
+        <p class="upload-status" id="upload-status">No file selected</p>
+        <p class="upload-error" id="upload-error" role="alert" hidden></p>
+      </section>
+
+      <section class="range-section" id="range-section">
+        <div class="range-buttons">
+          <button type="button" class="range-btn" data-range="1m">1 Month</button>
+          <button type="button" class="range-btn" data-range="1y">1 Year</button>
+          <button type="button" class="range-btn" data-range="all">All Time</button>
+        </div>
+        <div class="range-inputs">
+          <label for="from-date">From:</label>
+          <input type="date" id="from-date" name="from-date" />
+          <label for="to-date">To:</label>
+          <input type="date" id="to-date" name="to-date" />
+        </div>
+      </section>
+
+      <section class="chart-section" id="chart-section">
+        <p class="chart-message" id="chart-message">Upload a CSV file to see the chart.</p>
+        <canvas id="employees-chart"></canvas>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
