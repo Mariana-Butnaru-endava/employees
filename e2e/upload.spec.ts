@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fixture } from './fixtures.js';
+import { fixture } from './fixtures.ts';
 
 test.describe('CSV upload and chart rendering', () => {
   test('the chart area is disabled until a file is uploaded', async ({ page }) => {
@@ -31,8 +31,8 @@ test.describe('CSV upload and chart rendering', () => {
       const chart = window.__employeesChart;
       return {
         datasetCount: chart.data.datasets.length,
-        labels: chart.data.datasets.map((d) => d.label),
-        pointCounts: chart.data.datasets.map((d) => d.data.length),
+        labels: chart.data.datasets.map((d: { label: any; }) => d.label),
+        pointCounts: chart.data.datasets.map((d: { data: string | any[]; }) => d.data.length),
       };
     });
 
@@ -47,7 +47,7 @@ test.describe('CSV upload and chart rendering', () => {
 
     // Each series must use a distinct color.
     const colors = await page.evaluate(() =>
-      window.__employeesChart.data.datasets.map((d) => d.borderColor)
+      window.__employeesChart.data.datasets.map((d: { borderColor: any; }) => d.borderColor)
     );
     expect(new Set(colors).size).toBe(colors.length);
   });
@@ -67,6 +67,9 @@ test.describe('CSV upload and chart rendering', () => {
       const dropzone = document.getElementById('dropzone');
       const dropEvent = new DragEvent('drop', { bubbles: true, cancelable: true });
       Object.defineProperty(dropEvent, 'dataTransfer', { value: dataTransfer });
+      if (!dropzone) {
+        throw new Error('Dropzone not found');
+      }
       dropzone.dispatchEvent(dropEvent);
     }, csv);
 

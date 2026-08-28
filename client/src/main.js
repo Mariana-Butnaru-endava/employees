@@ -51,6 +51,8 @@ const toInput = document.getElementById('to-date');
 
 let chart = null;
 let currentDataset = null; // { dateColumn, series, data }
+let uploadSequence = 0;
+let activeUploadController = null;
 
 function showError(message) {
   uploadError.textContent = message;
@@ -73,6 +75,9 @@ function setActiveRangeButton(range) {
 }
 
 async function uploadFile(file) {
+  const sequence = ++uploadSequence;
+  activeUploadController?.abort();
+  activeUploadController = null;
   clearError();
 
   if (!file) return;
@@ -84,13 +89,18 @@ async function uploadFile(file) {
 
   const formData = new FormData();
   formData.append('file', file);
+  const controller = new AbortController();
+  activeUploadController = controller;
 
   try {
     const response = await fetch('/api/upload', {
       method: 'POST',
       body: formData,
+      signal: controller.signal,
     });
     const body = await response.json();
+
+    if (sequence !== uploadSequence) return;
 
     if (!response.ok) {
       showError(body.error || 'Upload failed.');
@@ -105,8 +115,13 @@ async function uploadFile(file) {
     setActiveRangeButton('all');
     applyRange(fullDateBounds());
   } catch (err) {
+    if (sequence !== uploadSequence || err.name === 'AbortError') return;
     showError('Could not reach the server. Please try again.');
     resetChartArea();
+  } finally {
+    if (sequence === uploadSequence) {
+      activeUploadController = null;
+    }
   }
 }
 

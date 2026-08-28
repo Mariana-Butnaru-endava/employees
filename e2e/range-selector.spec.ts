@@ -1,13 +1,13 @@
-import { test, expect } from '@playwright/test';
-import { fixture } from './fixtures.js';
+import { test, expect, Page } from '@playwright/test';
+import { fixture } from './fixtures.ts';
 
-async function uploadAndWaitForChart(page) {
+async function uploadAndWaitForChart(page: Page) {
   await page.goto('/');
   await page.setInputFiles('#file-input', fixture('list2.csv'));
   await page.waitForFunction(() => window.__employeesChart);
 }
 
-async function pointCount(page) {
+async function pointCount(page: Page) {
   return page.evaluate(() => window.__employeesChart.data.datasets[0].data.length);
 }
 

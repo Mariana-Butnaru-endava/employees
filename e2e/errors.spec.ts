@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fixture } from './fixtures.js';
+import { fixture } from './fixtures.ts';
 
 test.describe('Upload error handling', () => {
   test('uploading a non-CSV file shows the .csv error', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('Upload error handling', () => {
     await expect(page.locator('#upload-error')).toHaveText('No valid data rows to display.');
   });
 
-  test.only('a subsequent valid upload clears a previous error', async ({ page }) => {
+  test('a subsequent valid upload clears a previous error', async ({ page }) => {
     const validFile = 'list2.csv';
     await page.goto('/');
 
@@ -50,7 +50,8 @@ test.describe('Upload error handling', () => {
     await expect(page.locator('#upload-status')).toBeVisible();
     await expect(page.locator('#upload-status')).toContainText(`Uploaded: ${validFile}`);
     await expect(page.locator('#employees-chart')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Month' })).toBeEnabled();
+    await expect(page.locator('#range-fieldset')).toBeEnabled();
+    await expect(page.locator('.range-btn[data-range="1m"]')).toBeEnabled();
     await expect(page.locator('#upload-error')).toBeHidden();
   });
 });

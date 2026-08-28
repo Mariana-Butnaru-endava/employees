@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { fixture } from './fixtures.js';
+import { fixture } from './fixtures.ts';
+
+declare global {
+  interface Window {
+    __employeesChart: any;
+  }
+}
 
 // Chart.js renders the legend, tooltip and crosshair onto a <canvas>, so
 // there are no DOM nodes to click/assert on directly. These tests read the
@@ -15,7 +21,7 @@ test.beforeEach(async ({ page }) => {
 
 test('the chart shows a top legend with all series names', async ({ page }) => {
   const legendLabels = await page.evaluate(() =>
-    window.__employeesChart.legend.legendItems.map((item) => item.text)
+    window.__employeesChart.legend.legendItems.map((item: { text: any; }) => item.text)
   );
   console.log('Chart labels: ', legendLabels);
 
@@ -33,24 +39,26 @@ test('the chart shows a top legend with all series names', async ({ page }) => {
 test('clicking a legend item toggles the visibility of that line', async ({ page }) => {
   const allCompanyIndex = 3;
   const canvasBox = await page.locator('#employees-chart').boundingBox();
+  expect(canvasBox).not.toBeNull();
+  const box = canvasBox!;
 
   const hitbox = await page.evaluate((index) => {
-    const box = window.__employeesChart.legend.legendHitBoxes[index];
-    return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+    const chartBox = window.__employeesChart.legend.legendHitBoxes[index];
+    return { x: chartBox.left + chartBox.width / 2, y: chartBox.top + chartBox.height / 2 };
   }, allCompanyIndex);
 
   expect(await page.evaluate((i) => window.__employeesChart.isDatasetVisible(i), allCompanyIndex)).toBe(
     true
   );
 
-  await page.mouse.click(canvasBox.x + hitbox.x, canvasBox.y + hitbox.y);
+  await page.mouse.click(box.x + hitbox.x, box.y + hitbox.y);
 
   await expect
     .poll(() => page.evaluate((i) => window.__employeesChart.isDatasetVisible(i), allCompanyIndex))
     .toBe(false);
 
   // Clicking again re-shows the line.
-  await page.mouse.click(canvasBox.x + hitbox.x, canvasBox.y + hitbox.y);
+  await page.mouse.click(box.x + hitbox.x, box.y + hitbox.y);
 
   await expect
     .poll(() => page.evaluate((i) => window.__employeesChart.isDatasetVisible(i), allCompanyIndex))
@@ -77,6 +85,8 @@ test('hovering over the chart draws a crosshair and shows a tooltip for every se
 }) => {
   await page.locator('#employees-chart').scrollIntoViewIfNeeded();
   const canvasBox = await page.locator('#employees-chart').boundingBox();
+  expect(canvasBox).not.toBeNull();
+  const box = canvasBox!;
 
   // Hover over the pixel position of the 6th data point (an arbitrary,
   // non-edge point) using the real rendered point coordinates.
@@ -87,7 +97,7 @@ test('hovering over the chart draws a crosshair and shows a tooltip for every se
     return { x: el.x, y: el.y };
   });
 
-  await page.mouse.move(canvasBox.x + point.x, canvasBox.y + point.y, { steps: 5 });
+  await page.mouse.move(box.x + point.x, box.y + point.y, { steps: 5 });
 
   await expect.poll(() => page.evaluate(() => window.__employeesChart.crosshair?.enabled)).toBe(true);
 
@@ -98,20 +108,22 @@ test('hovering over the chart draws a crosshair and shows a tooltip for every se
     return {
       dataPointCount: tooltip.dataPoints.length,
       title: tooltip.title,
-      labels: tooltip.body.map((line) => line.lines[0]),
+      labels: tooltip.body.map((line: { lines: any[]; }) => line.lines[0]),
     };
   });
 
   // All 4 series should be represented in the tooltip for the hovered date.
   expect(dataPointCount).toBe(4);
   expect(title.join(' ')).toMatch(/\d{4}/); // contains the full year, i.e. a full date
-  expect(labels.some((line) => line.startsWith('Endava Bucuresti:'))).toBe(true);
-  expect(labels.some((line) => line.startsWith('All Company:'))).toBe(true);
+  expect(labels.some((line: string) => line.startsWith('Endava Bucuresti:'))).toBe(true);
+  expect(labels.some((line: string) => line.startsWith('All Company:'))).toBe(true);
 });
 
 test('moving the mouse away from the chart hides the crosshair', async ({ page }) => {
   await page.locator('#employees-chart').scrollIntoViewIfNeeded();
   const canvasBox = await page.locator('#employees-chart').boundingBox();
+  expect(canvasBox).not.toBeNull();
+  const box = canvasBox!;
 
   const point = await page.evaluate(() => {
     const chart = window.__employeesChart;
@@ -119,11 +131,11 @@ test('moving the mouse away from the chart hides the crosshair', async ({ page }
     return { x: el.x, y: el.y };
   });
 
-  await page.mouse.move(canvasBox.x + point.x, canvasBox.y + point.y, { steps: 5 });
+  await page.mouse.move(box.x + point.x, box.y + point.y, { steps: 5 });
   await expect.poll(() => page.evaluate(() => window.__employeesChart.crosshair?.enabled)).toBe(true);
   await expect.poll(() => page.evaluate(() => window.__employeesChart.tooltip.opacity)).toBeGreaterThan(0);
 
-  await page.mouse.move(canvasBox.x - 50, canvasBox.y - 50, { steps: 5 });
+  await page.mouse.move(box.x - 50, box.y - 50, { steps: 5 });
 
   await expect.poll(() => page.evaluate(() => window.__employeesChart.crosshair?.enabled)).toBe(false);
   await expect.poll(() => page.evaluate(() => window.__employeesChart.tooltip.opacity)).toBe(0);
