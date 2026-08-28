@@ -123,6 +123,7 @@ function resetChartArea() {
   if (chart) {
     chart.destroy();
     chart = null;
+    window.__employeesChart = null;
   }
   chartCanvas.hidden = true;
   chartMessage.hidden = false;
@@ -155,6 +156,7 @@ function renderChart(fromDate, toDate) {
     if (chart) {
       chart.destroy();
       chart = null;
+      window.__employeesChart = null;
     }
     chartCanvas.hidden = true;
     chartMessage.hidden = false;
@@ -223,6 +225,10 @@ function renderChart(fromDate, toDate) {
       },
     },
   });
+
+  // Exposed for end-to-end test introspection only (Chart.js renders to
+  // canvas, so tests need a handle to read datasets/tooltip/crosshair state).
+  window.__employeesChart = chart;
 }
 
 fileInput.addEventListener('change', (e) => {

@@ -1,0 +1,81 @@
+# EmployeesNumber
+
+EmployeesNumber is a web application for uploading employee CSV data and
+visualizing each data series as an interactive line chart. It includes date
+range controls, drag-and-drop upload support, upload validation, and an
+Express API for parsing CSV files.
+
+## Prerequisites
+
+- Node.js and npm
+- Chromium for Playwright tests
+
+## Install Dependencies
+
+From the project directory, run:
+
+```powershell
+npm install
+```
+
+If Playwright browsers have not been installed on the machine, run:
+
+```powershell
+npx playwright install chromium
+```
+
+## Start the Application
+
+### Production Build on `http://localhost:3000`
+
+Build the frontend and start the Express server:
+
+```powershell
+npm run build
+npm start
+```
+
+Open [http://localhost:3000](http://localhost:3000) in a browser. The Express
+server serves the frontend from the generated `dist` directory and exposes the
+CSV upload API.
+
+### Development Mode
+
+Development mode uses two servers. Start each command in a separate terminal:
+
+```powershell
+# Terminal 1: Express API server
+npm run server
+```
+
+```powershell
+# Terminal 2: Vite development server
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173). Vite proxies `/api` and
+`/health` requests to the Express server on port `3000` and provides hot reload.
+
+## Run Tests
+
+The end-to-end tests use Playwright. They automatically start the Express API
+server on port `3000` and the Vite server on port `5173`.
+
+Run the complete test suite:
+
+```powershell
+npm run test:e2e
+```
+
+Run the tests in Playwright's interactive UI:
+
+```powershell
+npm run test:e2e:ui
+```
+
+Run one test file directly:
+
+```powershell
+npx playwright test e2e/range-selector.spec.js
+```
+
