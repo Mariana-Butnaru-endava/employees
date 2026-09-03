@@ -58,24 +58,24 @@ Open [http://localhost:5173]. Vite proxies `/api` and
 
 ## Run Tests
 
-The end-to-end tests use Playwright. They automatically start the Express API
-server on port `3000` and the Vite server on port `5173`.
+The UI tests use Playwright. They automatically start the Express API server on
+port `3000` and the Vite server on port `5173`.
 
 Run the complete test suite:
 
 ```powershell
-npm run test:e2e
+npm run test:ui
 ```
 
 Run the tests in Playwright's interactive UI:
 
 ```powershell
-npm run test:e2e:ui
+npm run test:ui:headed
 ```
 
 Run one test file directly:
 
 ```powershell
-npx playwright test e2e/range-selector.spec.ts
+npx playwright test tests/ui/range-selector.spec.ts
 ```
 

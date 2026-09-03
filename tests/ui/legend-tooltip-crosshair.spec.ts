@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fixture } from './fixtures.ts';
+import { fixture } from '../helpers/fixtures.ts';
 
 declare global {
   interface Window {
@@ -9,7 +9,7 @@ declare global {
 
 // Chart.js renders the legend, tooltip and crosshair onto a <canvas>, so
 // there are no DOM nodes to click/assert on directly. These tests read the
-// live Chart.js instance (exposed as window.__employeesChart for e2e use)
+// live Chart.js instance (exposed as window.__employeesChart for ui test use)
 // to compute real pixel coordinates for mouse interactions, and to assert
 // on the resulting chart/tooltip/legend state.
 

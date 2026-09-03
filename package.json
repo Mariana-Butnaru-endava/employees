@@ -8,8 +8,8 @@
     "server": "node server/index.js",
     "build": "vite build",
     "start": "node server/index.js",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
+    "test:ui": "playwright test tests/ui",
+    "test:ui:headed": "playwright test tests/ui --headed",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

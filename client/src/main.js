@@ -241,8 +241,8 @@ function renderChart(fromDate, toDate) {
     },
   });
 
-  // Exposed for end-to-end test introspection only (Chart.js renders to
-  // canvas, so tests need a handle to read datasets/tooltip/crosshair state).
+  // Exposed for ui test introspection only (Chart.js renders to canvas, so
+  // tests need a handle to read datasets/tooltip/crosshair state).
   window.__employeesChart = chart;
 }
 

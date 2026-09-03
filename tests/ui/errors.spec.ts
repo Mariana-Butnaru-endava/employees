@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fixture } from './fixtures.ts';
+import { fixture } from '../helpers/fixtures.ts';
 
 test.describe('Upload error handling', () => {
   test('uploading a non-CSV file shows the .csv error', async ({ page }) => {

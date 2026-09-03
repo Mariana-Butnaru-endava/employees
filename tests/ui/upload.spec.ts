@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fixture } from './fixtures.ts';
+import { fixture } from '../helpers/fixtures.ts';
 
 test.describe('CSV upload and chart rendering', () => {
   test('the chart area is disabled until a file is uploaded', async ({ page }) => {
