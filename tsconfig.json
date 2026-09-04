@@ -12,5 +12,5 @@
     "noEmit": true,
     "types": ["@playwright/test", "node"]
   },
-  "include": ["tests/**/*.ts", "src/**/*.ts"]
+  "include": ["tests/**/*.ts", "src/**/*.ts", "playwright.config.ts", "vite.config.ts"]
 }

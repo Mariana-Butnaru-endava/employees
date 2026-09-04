@@ -1,4 +1,7 @@
 import { defineConfig } from 'vite';
+import { env } from './src/config/env.ts';
+
+const devPort = Number(new URL(env.devBaseURL).port) || 5173;
 
 export default defineConfig({
   root: 'client',
@@ -7,10 +10,10 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    port: 5173,
+    port: devPort,
     proxy: {
-      '/api': 'http://localhost:3000',
-      '/health': 'http://localhost:3000',
+      '/api': env.baseURL,
+      '/health': env.baseURL,
     },
   },
 });

@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { env } from './src/config/env.ts';
 
 export default defineConfig({
   testDir: './tests',
@@ -7,7 +8,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: env.devBaseURL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -16,13 +17,13 @@ export default defineConfig({
   webServer: [
     {
       command: 'npm run server',
-      url: 'http://localhost:3000/health',
+      url: `${env.baseURL}${env.healthEndpoint}`,
       reuseExistingServer: true,
       timeout: 30_000,
     },
     {
       command: 'npm run dev',
-      url: 'http://localhost:5173',
+      url: env.devBaseURL,
       reuseExistingServer: true,
       timeout: 30_000,
     },

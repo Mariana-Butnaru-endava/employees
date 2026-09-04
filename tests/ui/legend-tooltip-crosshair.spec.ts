@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from '../helpers/ui-fixtures.ts';
 import { fixture } from '../helpers/fixtures.ts';
 
 declare global {
@@ -13,16 +14,14 @@ declare global {
 // to compute real pixel coordinates for mouse interactions, and to assert
 // on the resulting chart/tooltip/legend state.
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.setInputFiles('#file-input', fixture('list2.csv'));
-  await page.waitForFunction(() => window.__employeesChart);
+test.beforeEach(async ({ homePage }) => {
+  await homePage.goto();
+  await homePage.upload.uploadFile(fixture('list2.csv'));
+  await homePage.chart.waitForChart();
 });
 
-test('the chart shows a top legend with all series names', async ({ page }) => {
-  const legendLabels = await page.evaluate(() =>
-    window.__employeesChart.legend.legendItems.map((item: { text: any; }) => item.text)
-  );
+test('the chart shows a top legend with all series names', async ({ homePage }) => {
+  const legendLabels = await homePage.chart.getLegendLabels();
   console.log('Chart labels: ', legendLabels);
 
   expect(legendLabels).toEqual([
@@ -31,49 +30,32 @@ test('the chart shows a top legend with all series names', async ({ page }) => {
     'Endava CE Region',
     'All Company',
   ]);
-  const position = await page.evaluate(() => window.__employeesChart.options.plugins.legend.position);
+  const position = await homePage.chart.getLegendPosition();
   console.log('position of labels: ', position);
   expect(position).toBe('top');
 });
 
-test('clicking a legend item toggles the visibility of that line', async ({ page }) => {
+test('clicking a legend item toggles the visibility of that line', async ({ homePage }) => {
   const allCompanyIndex = 3;
-  const canvasBox = await page.locator('#employees-chart').boundingBox();
-  expect(canvasBox).not.toBeNull();
-  const box = canvasBox!;
 
-  const hitbox = await page.evaluate((index) => {
-    const chartBox = window.__employeesChart.legend.legendHitBoxes[index];
-    return { x: chartBox.left + chartBox.width / 2, y: chartBox.top + chartBox.height / 2 };
-  }, allCompanyIndex);
+  expect(await homePage.chart.isDatasetVisible(allCompanyIndex)).toBe(true);
 
-  expect(await page.evaluate((i) => window.__employeesChart.isDatasetVisible(i), allCompanyIndex)).toBe(
-    true
-  );
-
-  await page.mouse.click(box.x + hitbox.x, box.y + hitbox.y);
+  await homePage.chart.clickLegendItem(allCompanyIndex);
 
   await expect
-    .poll(() => page.evaluate((i) => window.__employeesChart.isDatasetVisible(i), allCompanyIndex))
+    .poll(() => homePage.chart.isDatasetVisible(allCompanyIndex))
     .toBe(false);
 
   // Clicking again re-shows the line.
-  await page.mouse.click(box.x + hitbox.x, box.y + hitbox.y);
+  await homePage.chart.clickLegendItem(allCompanyIndex);
 
   await expect
-    .poll(() => page.evaluate((i) => window.__employeesChart.isDatasetVisible(i), allCompanyIndex))
+    .poll(() => homePage.chart.isDatasetVisible(allCompanyIndex))
     .toBe(true);
 });
 
-test('the chart title and axis titles match the spec', async ({ page }) => {
-  const { title, xTitle, yTitle } = await page.evaluate(() => {
-    const chart = window.__employeesChart;
-    return {
-      title: chart.options.plugins.title.text,
-      xTitle: chart.options.scales.x.title.text,
-      yTitle: chart.options.scales.y.title.text,
-    };
-  });
+test('the chart title and axis titles match the spec', async ({ homePage }) => {
+  const { title, xTitle, yTitle } = await homePage.chart.getTitles();
 
   expect(title).toBe('Employee Count Over Time');
   expect(xTitle).toBe('Date');
@@ -81,36 +63,19 @@ test('the chart title and axis titles match the spec', async ({ page }) => {
 });
 
 test('hovering over the chart draws a crosshair and shows a tooltip for every series', async ({
-  page,
+  homePage,
 }) => {
-  await page.locator('#employees-chart').scrollIntoViewIfNeeded();
-  const canvasBox = await page.locator('#employees-chart').boundingBox();
-  expect(canvasBox).not.toBeNull();
-  const box = canvasBox!;
+  await homePage.chart.scrollChartIntoView();
 
   // Hover over the pixel position of the 6th data point (an arbitrary,
   // non-edge point) using the real rendered point coordinates.
-  const point = await page.evaluate(() => {
-    const chart = window.__employeesChart;
-    const meta = chart.getDatasetMeta(0);
-    const el = meta.data[5];
-    return { x: el.x, y: el.y };
-  });
+  await homePage.chart.hoverDataPoint(0, 5);
 
-  await page.mouse.move(box.x + point.x, box.y + point.y, { steps: 5 });
+  await expect.poll(() => homePage.chart.isCrosshairEnabled()).toBe(true);
 
-  await expect.poll(() => page.evaluate(() => window.__employeesChart.crosshair?.enabled)).toBe(true);
+  await expect.poll(() => homePage.chart.getTooltipOpacity()).toBeGreaterThan(0);
 
-  await expect.poll(() => page.evaluate(() => window.__employeesChart.tooltip.opacity)).toBeGreaterThan(0);
-
-  const { dataPointCount, title, labels } = await page.evaluate(() => {
-    const tooltip = window.__employeesChart.tooltip;
-    return {
-      dataPointCount: tooltip.dataPoints.length,
-      title: tooltip.title,
-      labels: tooltip.body.map((line: { lines: any[]; }) => line.lines[0]),
-    };
-  });
+  const { dataPointCount, title, labels } = await homePage.chart.getTooltipInfo();
 
   // All 4 series should be represented in the tooltip for the hovered date.
   expect(dataPointCount).toBe(4);
@@ -119,24 +84,15 @@ test('hovering over the chart draws a crosshair and shows a tooltip for every se
   expect(labels.some((line: string) => line.startsWith('All Company:'))).toBe(true);
 });
 
-test('moving the mouse away from the chart hides the crosshair', async ({ page }) => {
-  await page.locator('#employees-chart').scrollIntoViewIfNeeded();
-  const canvasBox = await page.locator('#employees-chart').boundingBox();
-  expect(canvasBox).not.toBeNull();
-  const box = canvasBox!;
+test('moving the mouse away from the chart hides the crosshair', async ({ homePage }) => {
+  await homePage.chart.scrollChartIntoView();
 
-  const point = await page.evaluate(() => {
-    const chart = window.__employeesChart;
-    const el = chart.getDatasetMeta(0).data[5];
-    return { x: el.x, y: el.y };
-  });
+  await homePage.chart.hoverDataPoint(0, 5);
+  await expect.poll(() => homePage.chart.isCrosshairEnabled()).toBe(true);
+  await expect.poll(() => homePage.chart.getTooltipOpacity()).toBeGreaterThan(0);
 
-  await page.mouse.move(box.x + point.x, box.y + point.y, { steps: 5 });
-  await expect.poll(() => page.evaluate(() => window.__employeesChart.crosshair?.enabled)).toBe(true);
-  await expect.poll(() => page.evaluate(() => window.__employeesChart.tooltip.opacity)).toBeGreaterThan(0);
+  await homePage.chart.moveMouseRelativeToCanvas({ x: -50, y: -50 });
 
-  await page.mouse.move(box.x - 50, box.y - 50, { steps: 5 });
-
-  await expect.poll(() => page.evaluate(() => window.__employeesChart.crosshair?.enabled)).toBe(false);
-  await expect.poll(() => page.evaluate(() => window.__employeesChart.tooltip.opacity)).toBe(0);
+  await expect.poll(() => homePage.chart.isCrosshairEnabled()).toBe(false);
+  await expect.poll(() => homePage.chart.getTooltipOpacity()).toBe(0);
 });

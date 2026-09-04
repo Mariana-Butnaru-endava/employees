@@ -13,6 +13,17 @@ import 'chartjs-adapter-date-fns';
 import { CrosshairPlugin } from 'chartjs-plugin-crosshair';
 import { format } from 'date-fns';
 
+// Guard against a known chartjs-plugin-crosshair bug: if a resize fires before
+// the plugin's afterInit hook runs, chart.crosshair is still undefined and
+// afterDraw throws. Skip the hook until the plugin has fully initialized.
+const originalAfterDraw = CrosshairPlugin.afterDraw;
+CrosshairPlugin.afterDraw = function (chart, ...args) {
+  if (!chart.crosshair) {
+    return;
+  }
+  return originalAfterDraw.call(this, chart, ...args);
+};
+
 Chart.register(
   LineController,
   LineElement,
