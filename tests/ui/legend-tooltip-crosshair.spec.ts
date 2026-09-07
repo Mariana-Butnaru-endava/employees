@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
-import { test } from '../helpers/ui-fixtures.ts';
-import { fixture } from '../helpers/fixtures.ts';
+import { test } from '../../src/fixtures/ui-fixtures.ts';
+import { getFixturePath } from '../helpers/path-helper.ts';
 
 declare global {
   interface Window {
@@ -16,7 +16,7 @@ declare global {
 
 test.beforeEach(async ({ homePage }) => {
   await homePage.goto();
-  await homePage.upload.uploadFile(fixture('list2.csv'));
+  await homePage.upload.uploadFile(getFixturePath('list2.csv'));
   await homePage.chart.waitForChart();
 });
 

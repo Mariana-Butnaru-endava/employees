@@ -1,8 +1,8 @@
 import { test as base } from '@playwright/test';
-import { HomePage } from '../../src/pages/HomePage.js';
-import { UploadPage } from '../../src/pages/UploadPage.js';
-import { RangeSelectorPage } from '../../src/pages/RangeSelectorPage.js';
-import { ChartPage } from '../../src/pages/ChartPage.js';
+import { HomePage } from '../pages/HomePage.js';
+import { UploadPage } from '../pages/UploadPage.js';
+import { RangeSelectorPage } from '../pages/RangeSelectorPage.js';
+import { ChartPage } from '../pages/ChartPage.js';
 
 /**
  * Page fixtures exposed to UI specs.

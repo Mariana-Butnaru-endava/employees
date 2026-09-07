@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
-import { test } from '../helpers/ui-fixtures.ts';
-import { fixture } from '../helpers/fixtures.ts';
+import { test } from '../../src/fixtures/ui-fixtures.ts';
+import { getFixturePath } from '../helpers/path-helper.ts';
 
 test.describe('CSV upload and chart rendering', () => {
   test('the chart area is disabled until a file is uploaded', async ({ homePage }) => {
@@ -20,7 +20,7 @@ test.describe('CSV upload and chart rendering', () => {
 
     // Start the upload from the visible Upload CSV control (a label styled as a
     // button) and pick list2.csv through the browser file chooser.
-    await homePage.upload.uploadFileViaButton(fixture(fileName));
+    await homePage.upload.uploadFileViaButton(getFixturePath(fileName));
 
     await expect(homePage.upload.uploadStatus).toContainText(`Uploaded: ${fileName} `);
     await expect(homePage.upload.uploadError).toBeHidden();

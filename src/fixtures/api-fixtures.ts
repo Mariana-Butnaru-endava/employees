@@ -17,6 +17,8 @@ export type ApiServices = {
   healthService: HealthService;
   /** Service for the backend CSV upload endpoint. */
   uploadService: UploadService;
+  /** Internal fixture that clears persisted server-side state after each API test. */
+  _apiStateCleanup: void;
 };
 
 /**
@@ -34,4 +36,8 @@ export const test = base.extend<ApiServices>({
     const client = new ApiClient(request, API_BASE_URL);
     await use(new UploadService(client));
   },
+  _apiStateCleanup: [async ({ request }, use) => {
+    await use();
+    await request.delete(`${API_BASE_URL}/api/data`);
+  }, { auto: true }],
 });

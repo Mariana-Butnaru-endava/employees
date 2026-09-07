@@ -3,10 +3,15 @@ import { env } from './src/config/env.ts';
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './tests/helpers/global-setup.ts',
+  globalTeardown: './tests/helpers/global-teardown.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: 'list',
+  reporter: [
+    ['list'],
+    ['allure-playwright', { outputFolder: 'allure-results' }],
+  ],
   use: {
     baseURL: env.devBaseURL,
     trace: 'on-first-retry',

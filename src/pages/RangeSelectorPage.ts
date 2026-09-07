@@ -1,5 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage.js';
+import { log } from '../../tests/helpers/logger.js';
 
 /** Supported preset time ranges. */
 export type RangePreset = '1m' | '1y' | 'all';
@@ -37,7 +38,10 @@ export class RangeSelectorPage extends BasePage {
    * @returns A Playwright locator.
    */
   rangeButton(range: RangePreset): Locator {
-    return this.page.locator(`.range-btn[data-range="${range}"]`);
+    log('info', `Getting locator for range button: ${range}`);
+    const button = this.page.locator(`.range-btn[data-range="${range}"]`);
+    log('info', `Successfully got locator for range button: ${range}`);
+    return button;
   }
 
   /**
@@ -46,7 +50,10 @@ export class RangeSelectorPage extends BasePage {
    * @returns A Playwright locator.
    */
   activeRangeButton(): Locator {
-    return this.page.locator('.range-btn.active');
+    log('info', 'Getting locator for the active range button');
+    const button = this.page.locator('.range-btn.active');
+    log('info', 'Successfully got locator for the active range button');
+    return button;
   }
 
   /**
@@ -55,7 +62,14 @@ export class RangeSelectorPage extends BasePage {
    * @param range - The range preset to select.
    */
   async selectRange(range: RangePreset): Promise<void> {
-    await this.rangeButton(range).click();
+    log('info', `Selecting range preset: ${range}`);
+    try {
+      await this.rangeButton(range).click();
+      log('info', `Successfully selected range preset: ${range}`);
+    } catch (error) {
+      log('error', `Failed to select range preset ${range}: ${this.formatError(error)}`);
+      throw error;
+    }
   }
 
   /**
@@ -65,9 +79,16 @@ export class RangeSelectorPage extends BasePage {
    * @param to - The end date in yyyy-MM-dd format.
    */
   async setCustomDateRange(from: string, to: string): Promise<void> {
-    await this.fromDateInput.fill(from);
-    await this.toDateInput.fill(to);
-    await this.toDateInput.dispatchEvent('change');
+    log('info', `Setting custom date range from ${from} to ${to}`);
+    try {
+      await this.fromDateInput.fill(from);
+      await this.toDateInput.fill(to);
+      await this.toDateInput.dispatchEvent('change');
+      log('info', `Successfully set custom date range from ${from} to ${to}`);
+    } catch (error) {
+      log('error', `Failed to set custom date range from ${from} to ${to}: ${this.formatError(error)}`);
+      throw error;
+    }
   }
 
   /**
@@ -76,7 +97,15 @@ export class RangeSelectorPage extends BasePage {
    * @returns The current from date value.
    */
   async getFromDateValue(): Promise<string> {
-    return this.fromDateInput.inputValue();
+    log('info', 'Getting value of the from date input');
+    try {
+      const value = await this.fromDateInput.inputValue();
+      log('info', `Successfully got value of the from date input: ${value}`);
+      return value;
+    } catch (error) {
+      log('error', `Failed to get value of the from date input: ${this.formatError(error)}`);
+      throw error;
+    }
   }
 
   /**
@@ -85,7 +114,15 @@ export class RangeSelectorPage extends BasePage {
    * @returns The current to date value.
    */
   async getToDateValue(): Promise<string> {
-    return this.toDateInput.inputValue();
+    log('info', 'Getting value of the to date input');
+    try {
+      const value = await this.toDateInput.inputValue();
+      log('info', `Successfully got value of the to date input: ${value}`);
+      return value;
+    } catch (error) {
+      log('error', `Failed to get value of the to date input: ${this.formatError(error)}`);
+      throw error;
+    }
   }
 
   /**
@@ -95,7 +132,15 @@ export class RangeSelectorPage extends BasePage {
    * @returns True if the button has the active class, false otherwise.
    */
   async isRangeButtonActive(range: RangePreset): Promise<boolean> {
-    const classAttribute = await this.rangeButton(range).getAttribute('class');
-    return classAttribute !== null && classAttribute.includes('active');
+    log('info', `Checking whether range button is active: ${range}`);
+    try {
+      const classAttribute = await this.rangeButton(range).getAttribute('class');
+      const isActive = classAttribute !== null && classAttribute.includes('active');
+      log('info', `Range button active check completed: ${range} (active: ${isActive})`);
+      return isActive;
+    } catch (error) {
+      log('error', `Failed to check whether range button is active ${range}: ${this.formatError(error)}`);
+      throw error;
+    }
   }
 }

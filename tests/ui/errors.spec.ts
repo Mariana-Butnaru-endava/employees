@@ -1,12 +1,12 @@
 import { expect } from '@playwright/test';
-import { test } from '../helpers/ui-fixtures.ts';
-import { fixture } from '../helpers/fixtures.ts';
+import { test } from '../../src/fixtures/ui-fixtures.ts';
+import { getFixturePath } from '../helpers/path-helper.ts';
 
 test.describe('Upload error handling', () => {
   test('uploading a non-CSV file shows the .csv error', async ({ homePage }) => {
     await homePage.goto();
 
-    await homePage.upload.uploadFile(fixture('not-a-csv.txt'));
+    await homePage.upload.uploadFile(getFixturePath('not-a-csv.txt'));
 
     await expect(homePage.upload.uploadError).toHaveText('Please upload a .csv file.');
     await expect(homePage.chart.chartCanvas).toBeHidden();
@@ -16,7 +16,7 @@ test.describe('Upload error handling', () => {
   test('uploading an empty CSV shows the empty-file error', async ({ homePage }) => {
     await homePage.goto();
 
-    await homePage.upload.uploadFile(fixture('empty.csv'));
+    await homePage.upload.uploadFile(getFixturePath('empty.csv'));
 
     await expect(homePage.upload.uploadError).toHaveText('The uploaded file is empty.');
   });
@@ -24,7 +24,7 @@ test.describe('Upload error handling', () => {
   test('uploading a CSV with no numeric columns shows the no-columns error', async ({ homePage }) => {
     await homePage.goto();
 
-    await homePage.upload.uploadFile(fixture('no-numeric.csv'));
+    await homePage.upload.uploadFile(getFixturePath('no-numeric.csv'));
 
     await expect(homePage.upload.uploadError).toHaveText('No employee count columns found.');
   });
@@ -34,7 +34,7 @@ test.describe('Upload error handling', () => {
   }) => {
     await homePage.goto();
 
-    await homePage.upload.uploadFile(fixture('all-dropped.csv'));
+    await homePage.upload.uploadFile(getFixturePath('all-dropped.csv'));
 
     await expect(homePage.upload.uploadError).toHaveText('No valid data rows to display.');
   });
@@ -43,10 +43,10 @@ test.describe('Upload error handling', () => {
     const validFile = 'list2.csv';
     await homePage.goto();
 
-    await homePage.upload.uploadFile(fixture('not-a-csv.txt'));
+    await homePage.upload.uploadFile(getFixturePath('not-a-csv.txt'));
     await expect(homePage.upload.uploadError).toBeVisible();
 
-    await homePage.upload.uploadFile(fixture(validFile));
+    await homePage.upload.uploadFile(getFixturePath(validFile));
 
     await expect(homePage.upload.uploadStatus).toBeVisible();
     await expect(homePage.upload.uploadStatus).toContainText(`Uploaded: ${validFile}`);

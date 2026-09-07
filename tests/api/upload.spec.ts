@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test';
 import { env } from '../../src/config/env.ts';
-import { test, API_BASE_URL } from '../../src/fixtures/testFixtures.ts';
-import { fixture } from '../helpers/fixtures.ts';
-import { expectBadRequest, expectOkJson } from '../helpers/api-fixtures.ts';
+import { test, API_BASE_URL } from '../../src/fixtures/api-fixtures.ts';
+import { expectBadRequest, expectOkJson } from '../../src/core/utils/assertions.ts';
+import { getFixturePath } from '../helpers/path-helper.ts';
 
 /**
  * Shape of a successful upload response. Kept here so assertions stay typed.
@@ -16,7 +16,7 @@ type UploadResponse = {
 test.describe('POST /api/upload', () => {
   test.describe('positive cases', () => {
     test('returns the expected schema for the sample CSV', async ({ uploadService }) => {
-      const response = await uploadService.uploadCsvFile(fixture('list2.csv'));
+      const response = await uploadService.uploadCsvFile(getFixturePath('list2.csv'));
       console.log('Upload response: ', await response.json());
       const body = (await expectOkJson(response)) as UploadResponse;
 
@@ -114,7 +114,7 @@ test.describe('POST /api/upload', () => {
 
     test('rejects a non-CSV file based on extension', async ({ uploadService }) => {
       const response = await uploadService.uploadCsvFile(
-        fixture('not-a-csv.txt'),
+        getFixturePath('not-a-csv.txt'),
         undefined,
         'text/plain',
       );
@@ -122,17 +122,17 @@ test.describe('POST /api/upload', () => {
     });
 
     test('rejects an empty CSV file', async ({ uploadService }) => {
-      const response = await uploadService.uploadCsvFile(fixture('empty.csv'));
+      const response = await uploadService.uploadCsvFile(getFixturePath('empty.csv'));
       await expectBadRequest(response, 'The uploaded file is empty.');
     });
 
     test('rejects a CSV with no numeric columns', async ({ uploadService }) => {
-      const response = await uploadService.uploadCsvFile(fixture('no-numeric.csv'));
+      const response = await uploadService.uploadCsvFile(getFixturePath('no-numeric.csv'));
       await expectBadRequest(response, 'No employee count columns found.');
     });
 
     test('rejects a CSV when every row is dropped', async ({ uploadService }) => {
-      const response = await uploadService.uploadCsvFile(fixture('all-dropped.csv'));
+      const response = await uploadService.uploadCsvFile(getFixturePath('all-dropped.csv'));
       await expectBadRequest(response, 'No valid data rows to display.');
     });
 

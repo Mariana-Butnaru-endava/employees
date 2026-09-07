@@ -156,6 +156,27 @@ function resetChartArea() {
   chartMessage.textContent = 'Upload a CSV file to see the chart.';
 }
 
+/**
+ * Loads the latest dataset from the backend when the page loads.
+ * This supports E2E flows where the upload is performed via the API
+ * before the browser is opened.
+ */
+async function loadExistingDataset() {
+  try {
+    const response = await fetch('/api/data');
+    if (!response.ok) return;
+
+    const body = await response.json();
+    currentDataset = body;
+    uploadStatus.textContent = `Loaded: ${body.data.length} rows`;
+    enableControls();
+    setActiveRangeButton('all');
+    applyRange(fullDateBounds());
+  } catch (err) {
+    // Ignore load errors so the page still works for fresh uploads.
+  }
+}
+
 function fullDateBounds() {
   const dates = currentDataset.data.map((row) => new Date(row[currentDataset.dateColumn]).getTime());
   return { from: new Date(Math.min(...dates)), to: new Date(Math.max(...dates)) };
@@ -314,3 +335,5 @@ function onCustomDateChange() {
 
 fromInput.addEventListener('change', onCustomDateChange);
 toInput.addEventListener('change', onCustomDateChange);
+
+loadExistingDataset();

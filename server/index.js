@@ -17,8 +17,29 @@ const upload = multer({ dest: uploadsDir });
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/** In-memory store for the most recently uploaded dataset. */
+let lastUpload = null;
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+/**
+ * Returns the most recently uploaded dataset, or 404 if no upload exists.
+ */
+app.get('/api/data', (req, res) => {
+  if (!lastUpload) {
+    return res.status(404).json({ error: 'No uploaded dataset available.' });
+  }
+  res.json(lastUpload);
+});
+
+/**
+ * Clears the in-memory uploaded dataset.
+ */
+app.delete('/api/data', (req, res) => {
+  lastUpload = null;
+  res.status(204).send();
 });
 
 app.post('/api/upload', upload.single('file'), async (req, res) => {
@@ -46,6 +67,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
   try {
     const result = await parseEmployeesCsv(file.path);
+    lastUpload = result;
     res.status(200).json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });

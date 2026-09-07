@@ -3,6 +3,7 @@ import { BasePage } from './BasePage.js';
 import { UploadPage } from './UploadPage.js';
 import { RangeSelectorPage } from './RangeSelectorPage.js';
 import { ChartPage } from './ChartPage.js';
+import { log } from '../../tests/helpers/logger.js';
 
 /**
  * Page object for the home page of the application.
@@ -34,7 +35,14 @@ export class HomePage extends BasePage {
    * Navigates to the home page (`/`).
    */
   async goto(): Promise<void> {
-    await this.navigateTo('/');
+    log('info', 'Navigating to the home page');
+    try {
+      await this.navigateTo('/');
+      log('info', 'Successfully navigated to the home page');
+    } catch (error) {
+      log('error', `Failed to navigate to the home page: ${this.formatError(error)}`);
+      throw error;
+    }
   }
 
   /**
@@ -43,8 +51,16 @@ export class HomePage extends BasePage {
    * @param filePath - The absolute path to the CSV file.
    */
   async uploadAndWaitForChart(filePath: string): Promise<void> {
-    await this.goto();
-    await this.upload.uploadFile(filePath);
-    await this.chart.waitForChart();
+    log('info', `Uploading CSV file and waiting for chart to render: ${filePath}`);
+    try {
+      await this.goto();
+      await this.upload.uploadFile(filePath);
+      await this.chart.waitForChart();
+      log('info', `Successfully uploaded CSV file and rendered chart: ${filePath}`);
+    } catch (error) {
+      log('error', `Failed to upload CSV file and render chart ${filePath}: ${this.formatError(error)}`);
+      throw error;
+    }
   }
+
 }

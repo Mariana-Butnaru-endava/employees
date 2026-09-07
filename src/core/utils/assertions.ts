@@ -7,12 +7,10 @@ import { APIResponse } from '@playwright/test';
  * @returns The parsed JSON body.
  */
 export async function expectOkJson(response: APIResponse): Promise<unknown> {
-  if (response.status() !== 200) {
-    const body = await response.text();
-    console.log('Response: ', body);
-    throw new Error(`Expected status 200 but got ${response.status()}: ${body}`);
-  }
-  return response.json();
+  await expectStatus(response, 200);
+  const body = await response.json();
+  console.log('Response: ', body);
+  return body;
 }
 
 /**

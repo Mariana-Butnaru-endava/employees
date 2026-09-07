@@ -1,10 +1,10 @@
 import { expect } from '@playwright/test';
 import { env } from '../../src/config/env.ts';
-import { test, API_BASE_URL } from '../../src/fixtures/testFixtures.ts';
-import { expectOkJson, expectStatus } from '../helpers/api-fixtures.ts';
+import { test, API_BASE_URL } from '../../src/fixtures/api-fixtures.ts';
+import { expectOkJson, expectStatus } from '../../src/core/utils/assertions.ts';
 
 test.describe('GET /health', () => {
-  test.only('returns a 200 OK status payload', async ({ healthService }) => {
+  test('returns a 200 OK status payload', async ({ healthService }) => {
     const response = await healthService.getStatus();
 
     const respBody = await expectOkJson(response);

@@ -79,3 +79,14 @@ Run one test file directly:
 npx playwright test tests/ui/range-selector.spec.ts
 ```
 
+### Generate an Allure Report
+
+Run the UI and API tests, generate the Allure HTML report, and open it:
+
+```powershell
+npm run test:ui
+npm run test:api
+npm run allure:generate
+npm run allure:open
+```
+
