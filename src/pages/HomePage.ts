@@ -46,6 +46,20 @@ export class HomePage extends BasePage {
   }
 
   /**
+   * Navigates to the home page and loads the backend's latest dataset.
+   */
+  async gotoWithExistingDataset(): Promise<void> {
+    log('info', 'Navigating to the home page with the existing dataset');
+    try {
+      await this.navigateTo('/?loadExisting');
+      log('info', 'Successfully navigated to the home page with the existing dataset');
+    } catch (error) {
+      log('error', `Failed to navigate to the home page: ${this.formatError(error)}`);
+      throw error;
+    }
+  }
+
+  /**
    * Uploads a CSV file and waits for the chart to be rendered.
    *
    * @param filePath - The absolute path to the CSV file.

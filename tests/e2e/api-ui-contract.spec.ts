@@ -53,7 +53,7 @@ test.describe('API-UI contract', () => {
     expect(uploadBody.data).toHaveLength(18);
 
     // 2. Open the home page; the client loads the persisted dataset on page load.
-    await homePage.goto();
+    await homePage.gotoWithExistingDataset();
     await homePage.chart.waitForChart();
 
     // 3. Select the custom date range from 8 Sep 2025 to 1 Sep 2026.

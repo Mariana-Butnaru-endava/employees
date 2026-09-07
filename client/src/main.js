@@ -95,6 +95,8 @@ async function uploadFile(file) {
 
   if (!file.name.toLowerCase().endsWith('.csv')) {
     showError('Please upload a .csv file.');
+    uploadStatus.textContent = 'No file selected';
+    resetChartArea();
     return;
   }
 
@@ -336,4 +338,6 @@ function onCustomDateChange() {
 fromInput.addEventListener('change', onCustomDateChange);
 toInput.addEventListener('change', onCustomDateChange);
 
-loadExistingDataset();
+if (new URLSearchParams(window.location.search).has('loadExisting')) {
+  loadExistingDataset();
+}
