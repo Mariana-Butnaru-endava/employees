@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
+import fs from 'node:fs';
 import { test } from '../../src/fixtures/ui-fixtures.ts';
-import { getFixturePath } from '../helpers/path-helper.ts';
+import { getFixturePath, getFixtureRowDates } from '../helpers/path-helper.ts';
 
 test.describe('CSV upload and chart rendering', () => {
   test('the chart area is disabled until a file is uploaded', async ({ homePage }) => {
@@ -20,7 +21,14 @@ test.describe('CSV upload and chart rendering', () => {
 
     // Start the upload from the visible Upload CSV control (a label styled as a
     // button) and pick list2.csv through the browser file chooser.
-    await homePage.upload.uploadFileViaButton(getFixturePath(fileName));
+    const fixturePath = getFixturePath(fileName);
+    const expectedSeries = fs
+      .readFileSync(fixturePath, 'utf-8')
+      .split('\n')[0]
+      .split(',')
+      .slice(1);
+    const expectedRowCount = getFixtureRowDates(fileName).length;
+    await homePage.upload.uploadFileViaButton(fixturePath);
 
     await expect(homePage.upload.uploadStatus).toContainText(`Uploaded: ${fileName} `);
     await expect(homePage.upload.uploadError).toBeHidden();
@@ -32,14 +40,9 @@ test.describe('CSV upload and chart rendering', () => {
 
     const { datasetCount, labels, pointCounts } = await homePage.chart.getDatasetSummary();
 
-    expect(datasetCount).toBe(4);
-    expect(labels).toEqual([
-      'Endava Bucuresti',
-      'Endava Romania',
-      'Endava CE Region',
-      'All Company',
-    ]);
-    expect(pointCounts).toEqual([18, 18, 18, 18]);
+    expect(datasetCount).toBe(expectedSeries.length);
+    expect(labels).toEqual(expectedSeries);
+    expect(pointCounts).toEqual(Array(datasetCount).fill(expectedRowCount));
 
     // Each series must use a distinct color.
     const colors = await homePage.chart.getBorderColors();

@@ -2,7 +2,7 @@ import { expect, mergeTests } from '@playwright/test';
 import { test as apiTest } from '../../src/fixtures/api-fixtures.ts';
 import { test as uiTest } from '../../src/fixtures/ui-fixtures.ts';
 import { expectOkJson } from '../../src/core/utils/assertions.ts';
-import { getFixturePath } from '../helpers/path-helper.ts';
+import { getFixturePath, getFixtureRowDates } from '../helpers/path-helper.ts';
 
 /**
  * Combined test object that provides both API services and UI page fixtures.
@@ -21,13 +21,9 @@ type UploadResponse = {
   data: Record<string, number | string>[];
 };
 
-/**
- * Number of data points expected for the selected date range.
- *
- * list2.csv contains 18 rows; rows before 2025-09-08 and after 2026-09-01
- * are excluded, leaving 12 rows in the range [2025-09-08, 2026-09-01].
- */
-const EXPECTED_POINT_COUNT = 12;
+/** Custom date range used to filter the chart in the test below. */
+const RANGE_FROM = '2025-09-08';
+const RANGE_TO = '2026-09-01';
 
 test.describe('API-UI contract', () => {
   /**
@@ -41,6 +37,7 @@ test.describe('API-UI contract', () => {
     healthService,
   }) => {
     // 1. Upload list2.csv via the backend CSV upload endpoint.
+    const rowDates = getFixtureRowDates('list2.csv');
     const uploadResponse = await uploadService.uploadCsvFile(getFixturePath('list2.csv'));
     const uploadBody = (await expectOkJson(uploadResponse)) as UploadResponse;
 
@@ -50,22 +47,25 @@ test.describe('API-UI contract', () => {
       'Endava CE Region',
       'All Company',
     ]);
-    expect(uploadBody.data).toHaveLength(18);
+    expect(uploadBody.data).toHaveLength(rowDates.length);
 
     // 2. Open the home page; the client loads the persisted dataset on page load.
     await homePage.gotoWithExistingDataset();
     await homePage.chart.waitForChart();
 
     // 3. Select the custom date range from 8 Sep 2025 to 1 Sep 2026.
-    await homePage.rangeSelector.setCustomDateRange('2025-09-08', '2026-09-01');
+    await homePage.rangeSelector.setCustomDateRange(RANGE_FROM, RANGE_TO);
 
     // 4. Verify the chart is displayed and only shows the points within the selected range.
+    const expectedPointCount = rowDates.filter(
+      (date) => date >= RANGE_FROM && date <= RANGE_TO,
+    ).length;
     await expect(homePage.chart.chartCanvas).toBeVisible();
     await expect(homePage.chart.chartMessage).toBeHidden();
-    expect(await homePage.chart.getPointCount()).toBe(EXPECTED_POINT_COUNT);
+    expect(await homePage.chart.getPointCount()).toBe(expectedPointCount);
 
-    await expect(homePage.rangeSelector.fromDateInput).toHaveValue('2025-09-08');
-    await expect(homePage.rangeSelector.toDateInput).toHaveValue('2026-09-01');
+    await expect(homePage.rangeSelector.fromDateInput).toHaveValue(RANGE_FROM);
+    await expect(homePage.rangeSelector.toDateInput).toHaveValue(RANGE_TO);
 
     // 5. Verify the backend health endpoint reports ok.
     const healthResponse = await healthService.getStatus();

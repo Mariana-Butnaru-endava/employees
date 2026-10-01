@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import { env } from '../../src/config/env.ts';
 import { test, API_BASE_URL } from '../../src/fixtures/api-fixtures.ts';
 import { expectBadRequest, expectOkJson } from '../../src/core/utils/assertions.ts';
-import { getFixturePath } from '../helpers/path-helper.ts';
+import { getFixturePath, getFixtureRowDates } from '../helpers/path-helper.ts';
 
 /**
  * Shape of a successful upload response. Kept here so assertions stay typed.
@@ -16,6 +16,7 @@ type UploadResponse = {
 test.describe('POST /api/upload', () => {
   test.describe('positive cases', () => {
     test('returns the expected schema for the sample CSV', async ({ uploadService }) => {
+      const expectedRowCount = getFixtureRowDates('list2.csv').length;
       const response = await uploadService.uploadCsvFile(getFixturePath('list2.csv'));
       console.log('Upload response: ', await response.json());
       const body = (await expectOkJson(response)) as UploadResponse;
@@ -27,7 +28,7 @@ test.describe('POST /api/upload', () => {
         'Endava CE Region',
         'All Company',
       ]);
-      expect(body.data).toHaveLength(18);
+      expect(body.data).toHaveLength(expectedRowCount);
 
       const firstRow = body.data[0];
       expect(firstRow.observation_date).toBe('2025-04-08');
@@ -108,7 +109,9 @@ test.describe('POST /api/upload', () => {
 
   test.describe('negative cases', () => {
     test('rejects a request with no file', async ({ request }) => {
-      const response = await request.post(`${API_BASE_URL}${env.uploadEndpoint}`);
+      const url = `${API_BASE_URL}${env.uploadEndpoint}`;
+      console.log('Request: ', { method: 'POST', url, body: undefined });
+      const response = await request.post(url);
       await expectBadRequest(response, 'Please upload a .csv file.');
     });
 
