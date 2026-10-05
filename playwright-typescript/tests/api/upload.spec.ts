@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { env } from '../../src/config/env.ts';
+import { env } from '../../../config/env.ts';
 import { test, API_BASE_URL } from '../../src/fixtures/api-fixtures.ts';
 import { expectBadRequest, expectOkJson } from '../../src/core/utils/assertions.ts';
 import { getFixturePath, getFixtureRowDates } from '../helpers/path-helper.ts';

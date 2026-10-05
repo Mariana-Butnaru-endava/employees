@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { env } from '../config/env.ts';
+import { env } from '../../../config/env.ts';
 import { ApiClient } from '../core/api/apiClient.ts';
 import { HealthService } from '../core/api/health.ts';
 import { UploadService } from '../core/api/upload.ts';

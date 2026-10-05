@@ -5,26 +5,44 @@ visualizing each data series as an interactive line chart. It includes date
 range controls, drag-and-drop upload support, upload validation, and an
 Express API for parsing CSV files.
 
+## Project Layout
+
+The repository is split into two independent packages:
+
+- `EmployeesNumber/` — the application under test (client + server).
+- `EmployeesNumber/playwright-typescript/` — the Playwright + TypeScript end-to-end and API test framework.
+
+This separation keeps application dependencies and test-framework dependencies
+independent, making it easier to compare implementations or add another stack
+(for example Java + Selenium) later.
+
 ## Prerequisites
 
 - Node.js and npm
 - Chromium for Playwright tests
 
-## Install Dependencies
+## Install Application Dependencies
 
-From the project directory, run:
+From the project root, run:
 
 ```powershell
 npm install
 ```
 
-If Playwright browsers have not been installed on the machine, run:
+## Install Test Framework Dependencies
+
+From the test-framework directory, run:
 
 ```powershell
+cd playwright-typescript
+npm install
 npx playwright install chromium
 ```
 
 ## Start the Application
+
+The commands to start the application are unchanged and run from the project
+root.
 
 ### Production Build on `http://localhost:3000`
 
@@ -58,16 +76,29 @@ Open [http://localhost:5173]. Vite proxies `/api` and
 
 ## Run Tests
 
-The UI tests use Playwright. They automatically start the Express API server on
-port `3000` and the Vite server on port `5173`.
-
-Run the complete test suite:
+All test commands run from `playwright-typescript/`. The test framework
+automatically starts the Express API server on port `3000` and the Vite server
+on port `5173` before running the suite.
 
 ```powershell
-npm run test:ui
+cd playwright-typescript
 ```
 
-Run the tests in Playwright's interactive UI:
+Run the complete Playwright suite:
+
+```powershell
+npm test
+```
+
+Run by test layer:
+
+```powershell
+npm run test:api
+npm run test:ui
+npm run test:e2e
+```
+
+Run the UI tests in a visible browser:
 
 ```powershell
 npm run test:ui:headed
@@ -79,14 +110,30 @@ Run one test file directly:
 npx playwright test tests/ui/range-selector.spec.ts
 ```
 
-### Generate an Allure Report
+### Convenience Command from the Project Root
 
-Run the UI and API tests, generate the Allure HTML report, and open it:
+You can also run the full Playwright suite from the project root without
+cd-ing into the test package:
 
 ```powershell
-npm run test:ui
-npm run test:api
+npm run test:playwright
+```
+
+### Type Checking
+
+```powershell
+cd playwright-typescript
+npm run typecheck
+```
+
+### Generate an Allure Report
+
+Run the tests from the test-framework directory, then generate and open the
+report:
+
+```powershell
+cd playwright-typescript
+npm test
 npm run allure:generate
 npm run allure:open
 ```
-

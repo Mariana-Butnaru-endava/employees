@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { env } from './src/config/env.ts';
+import { env } from '../config/env.ts';
 
 export default defineConfig({
   testDir: './tests',
@@ -21,13 +21,13 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'npm run server',
+      command: 'cd .. && npm run server',
       url: `${env.baseURL}${env.healthEndpoint}`,
       reuseExistingServer: true,
       timeout: 30_000,
     },
     {
-      command: 'npm run dev',
+      command: 'cd .. && npm run dev',
       url: env.devBaseURL,
       reuseExistingServer: true,
       timeout: 30_000,

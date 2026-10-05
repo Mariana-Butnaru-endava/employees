@@ -29,39 +29,42 @@ jobs:
           node-version-file: '.nvmrc'
           cache: npm
 
-      - name: Install npm dependencies
+      - name: Install app dependencies
         run: npm ci
+
+      - name: Install Playwright TypeScript dependencies
+        run: cd playwright-typescript && npm ci
 
       - name: Cache Playwright browsers
         id: cache-playwright
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('playwright-typescript/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
 
       - name: Install Playwright browsers and system dependencies
         if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: cd playwright-typescript && npx playwright install --with-deps chromium
 
       - name: Create environment file
         run: cp .env.example .env
 
       - name: Run TypeScript type check
-        run: npm run typecheck
+        run: cd playwright-typescript && npm run typecheck
 
       - name: Build production bundle
         run: npm run build
 
       - name: Run all Playwright tests
-        run: npm test
+        run: cd playwright-typescript && npm test
         env:
           CI: true
 
       - name: Generate Allure report
         if: always()
-        run: npm run allure:generate
+        run: cd playwright-typescript && npm run allure:generate
         continue-on-error: true
 
       - name: Upload Allure results
@@ -69,7 +72,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
-          path: allure-results
+          path: playwright-typescript/allure-results
           retention-days: 30
           if-no-files-found: ignore
 
@@ -78,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: allure-report
+          path: playwright-typescript/allure-report
           retention-days: 30
           if-no-files-found: ignore
 
