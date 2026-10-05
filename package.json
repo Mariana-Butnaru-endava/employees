@@ -20,6 +20,7 @@
     "multer": "^2.0.0"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "dotenv": "^17.4.2",
     "vite": "^5.4.6"
   },
