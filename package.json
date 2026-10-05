@@ -20,6 +20,7 @@
     "multer": "^2.0.0"
   },
   "devDependencies": {
+    "dotenv": "^17.4.2",
     "vite": "^5.4.6"
   },
   "allowScripts": {
