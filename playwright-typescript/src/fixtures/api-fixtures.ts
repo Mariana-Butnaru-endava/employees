@@ -1,6 +1,7 @@
 import { test as base } from '@playwright/test';
 import { env } from '../../../config/env.ts';
 import { ApiClient } from '../core/api/apiClient.ts';
+import { DataService } from '../core/api/data.ts';
 import { HealthService } from '../core/api/health.ts';
 import { UploadService } from '../core/api/upload.ts';
 
@@ -17,6 +18,8 @@ export type ApiServices = {
   healthService: HealthService;
   /** Service for the backend CSV upload endpoint. */
   uploadService: UploadService;
+  /** Service for the backend dataset endpoint. */
+  dataService: DataService;
   /** Internal fixture that clears persisted server-side state after each API test. */
   _apiStateCleanup: void;
 };
@@ -36,8 +39,12 @@ export const test = base.extend<ApiServices>({
     const client = new ApiClient(request, API_BASE_URL);
     await use(new UploadService(client));
   },
-  _apiStateCleanup: [async ({ request }, use) => {
+  dataService: async ({ request }, use) => {
+    const client = new ApiClient(request, API_BASE_URL);
+    await use(new DataService(client));
+  },
+  _apiStateCleanup: [async ({ dataService }, use) => {
     await use();
-    await request.delete(`${API_BASE_URL}/api/data`);
+    await dataService.clearDataset();
   }, { auto: true }],
 });

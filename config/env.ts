@@ -33,4 +33,7 @@ export const env = {
 
   /** CSV upload endpoint path. */
   uploadEndpoint: getEnv('UPLOAD_ENDPOINT', '/api/upload'),
+
+  /** Dataset endpoint path for the in-memory uploaded data. */
+  dataEndpoint: getEnv('DATA_ENDPOINT', '/api/data'),
 };

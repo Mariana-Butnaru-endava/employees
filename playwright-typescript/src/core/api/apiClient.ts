@@ -37,4 +37,14 @@ export class ApiClient {
   async post(path: string, options?: Parameters<APIRequestContext['post']>[1]) {
     return this.context.post(`${this.baseURL}${path}`, options);
   }
+
+  /**
+   * Sends a DELETE request to the given path.
+   *
+   * @param path - The API path relative to the base URL.
+   * @returns The API response.
+   */
+  async delete(path: string) {
+    return this.context.delete(`${this.baseURL}${path}`);
+  }
 }
