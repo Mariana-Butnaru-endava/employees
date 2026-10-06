@@ -8,4 +8,5 @@ blob-report/
 allure-results/
 allure-report/
 playwright/.cache/
+target/
 .env

@@ -11,15 +11,17 @@ The repository is split into two independent packages:
 
 - `EmployeesNumber/` — the application under test (client + server).
 - `EmployeesNumber/playwright-typescript/` — the Playwright + TypeScript end-to-end and API test framework.
+- `EmployeesNumber/selenium-java/` — the Selenium + Java + TestNG + REST Assured test framework (Maven).
 
 This separation keeps application dependencies and test-framework dependencies
-independent, making it easier to compare implementations or add another stack
-(for example Java + Selenium) later.
+independent, and the two test stacks implement the same scenarios for direct
+comparison.
 
 ## Prerequisites
 
 - Node.js and npm
 - Chromium for Playwright tests
+- JDK 21 and Maven for the Selenium Java tests
 
 ## Install Application Dependencies
 
@@ -136,4 +138,31 @@ cd playwright-typescript
 npm test
 npm run allure:generate
 npm run allure:open
+```
+
+## Selenium Java Tests
+
+The `selenium-java` module uses Maven, TestNG, Selenium WebDriver, and REST
+Assured. It auto-starts the Express and Vite servers before the suite and
+stops them afterwards.
+
+Run the whole suite:
+
+```powershell
+cd selenium-java
+mvn test
+```
+
+Or from the project root:
+
+```powershell
+npm run test:selenium
+```
+
+Useful overrides:
+
+```powershell
+mvn test -Dheadless=false          # visible browser
+mvn test -Dbrowser=firefox         # firefox instead of chrome
+mvn test -Dautostart.servers=false # use servers you started yourself
 ```

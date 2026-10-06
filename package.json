@@ -8,7 +8,8 @@
     "server": "node server/index.js",
     "build": "vite build",
     "start": "node server/index.js",
-    "test:playwright": "cd playwright-typescript && npm test"
+    "test:playwright": "cd playwright-typescript && npm test",
+    "test:selenium": "cd selenium-java && mvn test"
   },
   "dependencies": {
     "chart.js": "^4.4.4",
