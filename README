@@ -159,6 +159,27 @@ Or from the project root:
 npm run test:selenium
 ```
 
+### Generate the Selenium Allure Report
+
+The TestNG adapter writes Allure results to `selenium-java/target/allure-results`
+during `mvn test`. Generate the HTML report after the tests finish:
+
+```powershell
+cd selenium-java
+mvn test
+mvn allure:report
+```
+
+The generated report is available at `target/site/allure-maven-plugin/index.html`.
+To generate the report, start a local report server, and open it in your default
+browser instead, run:
+
+```powershell
+mvn allure:serve
+```
+
+Stop the report server with `Ctrl+C`.
+
 Useful overrides:
 
 ```powershell

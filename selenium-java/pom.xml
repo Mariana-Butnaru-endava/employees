@@ -20,6 +20,9 @@
     <webdrivermanager.version>6.1.0</webdrivermanager.version>
     <jackson.version>2.18.2</jackson.version>
     <slf4j.version>2.0.16</slf4j.version>
+    <allure.version>2.29.1</allure.version>
+    <allure.report.version>2.29.0</allure.report.version>
+    <allure.maven.version>2.15.2</allure.maven.version>
     <surefire.version>3.5.2</surefire.version>
   </properties>
 
@@ -56,6 +59,12 @@
       <artifactId>slf4j-simple</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-testng</artifactId>
+      <version>${allure.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -70,7 +79,17 @@
           </suiteXmlFiles>
           <systemPropertyVariables>
             <headless>true</headless>
+            <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
           </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>io.qameta.allure</groupId>
+        <artifactId>allure-maven</artifactId>
+        <version>${allure.maven.version}</version>
+        <configuration>
+          <reportVersion>${allure.report.version}</reportVersion>
+          <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
         </configuration>
       </plugin>
     </plugins>

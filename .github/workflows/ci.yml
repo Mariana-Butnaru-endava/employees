@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test:
+  playwright-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -62,48 +62,117 @@ jobs:
         env:
           CI: true
 
-      - name: Generate Allure report
-        if: always()
-        run: cd playwright-typescript && npm run allure:generate
-        continue-on-error: true
-
-      - name: Upload Allure results
+      - name: Upload Playwright Allure results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
+          name: playwright-allure-results
           path: playwright-typescript/allure-results
           retention-days: 30
-          if-no-files-found: ignore
+          if-no-files-found: warn
 
-      - name: Upload Allure HTML report
+  selenium-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: selenium-java/pom.xml
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Create environment file
+        run: cp .env.example .env
+
+      - name: Run Selenium TestNG tests
+        run: cd selenium-java && mvn --batch-mode test
+
+      - name: Upload Selenium Allure results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report
-          path: playwright-typescript/allure-report
+          name: selenium-allure-results
+          path: selenium-java/target/allure-results
           retention-days: 30
-          if-no-files-found: ignore
+          if-no-files-found: warn
+
+  combine-allure:
+    needs: [playwright-tests, selenium-tests]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+          cache-dependency-path: playwright-typescript/package-lock.json
+
+      - name: Install Allure command line
+        run: cd playwright-typescript && npm ci
+
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-allure-results'
+          path: combined-allure-results
+          merge-multiple: true
+
+      - name: Generate combined Allure report
+        run: playwright-typescript/node_modules/.bin/allure generate combined-allure-results --clean -o combined-allure-report
+
+      - name: Upload combined Allure results
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-allure-results
+          path: combined-allure-results
+          retention-days: 30
+
+      - name: Upload combined Allure HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-allure-report
+          path: combined-allure-report
+          retention-days: 30
 
   deploy-allure:
-    needs: test
-    if: needs.test.result == 'success'
+    needs: combine-allure
+    if: needs.combine-allure.result == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Download Allure HTML report
+      - name: Download combined Allure HTML report
         uses: actions/download-artifact@v4
         with:
-          name: allure-report
-          path: allure-report
+          name: combined-allure-report
+          path: combined-allure-report
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: allure-report
+          path: combined-allure-report
 
       - name: Deploy to GitHub Pages
         id: deployment
