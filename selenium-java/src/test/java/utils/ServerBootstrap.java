@@ -69,7 +69,10 @@ public final class ServerBootstrap {
       }
       java.io.File logFile = new java.io.File(logDir, name + ".log");
 
-      ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", command);
+      boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+      ProcessBuilder builder = isWindows
+          ? new ProcessBuilder("cmd.exe", "/c", command)
+          : new ProcessBuilder("sh", "-c", command);
       builder.redirectErrorStream(true);
       builder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile));
       builder.directory(new java.io.File("..").getCanonicalFile());
@@ -125,13 +128,21 @@ public final class ServerBootstrap {
       if (p != null && p.isAlive()) {
         log.info("Stopping process tree rooted at PID {}", p.pid());
         try {
-          // taskkill /T /F terminates the cmd.exe wrapper and all child processes.
-          new ProcessBuilder("taskkill", "/PID", String.valueOf(p.pid()), "/T", "/F")
-              .redirectErrorStream(true)
-              .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-              .start()
-              .waitFor(10, TimeUnit.SECONDS);
+          boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+          if (isWindows) {
+            // taskkill /T /F terminates the cmd.exe wrapper and all child processes.
+            new ProcessBuilder("taskkill", "/PID", String.valueOf(p.pid()), "/T", "/F")
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .start()
+                .waitFor(10, TimeUnit.SECONDS);
+          } else {
+            p.descendants().forEach(ProcessHandle::destroy);
+            p.destroy();
+            p.waitFor(10, TimeUnit.SECONDS);
+          }
         } catch (Exception e) {
+          p.descendants().forEach(ProcessHandle::destroyForcibly);
           p.destroyForcibly();
         }
       }
